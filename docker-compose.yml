@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres
+    volumes:
+      - quran-api-db:/var/lib/postgresql/data
+      - media:/app/media
+    ports:
+      - "5432:5432"
+    networks:
+      - es-net
+    environment:
+      - POSTGRES_USER=quran
+      - POSTGRES_PASSWORD=quran
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.2
+    environment:
+      - xpack.security.enabled=false
+      - "discovery.type=single-node"
+    networks:
+      - es-net
+    ports:
+      - 9200:9200
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.1.2
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    networks:
+      - es-net
+    depends_on:
+      - elasticsearch
+    ports:
+      - 5601:5601
+  api:
+    build:
+      context: ./quran-api
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./quran-api:/app
+      - media:/app/media
+      - static:/app/staticfiles
+    networks:
+      - es-net
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - ELASTICSEARCH_HOST=elasticsearch:9200
+
+networks:
+  es-net:
+    driver: bridge
+
+volumes:
+  quran-api-db:
+    driver: local
+  media:
+  static:

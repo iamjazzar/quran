@@ -1,0 +1,6 @@
+[submodule "quran-api"]
+	path = quran-api
+	url = git@github.com:iamjazzar/quran-api.git
+[submodule "quran-frontend"]
+	path = quran-frontend
+	url = git@github.com:iamjazzar/quran-frontend.git
